@@ -5,27 +5,21 @@ import os
 from pyrogram import idle
 from bot import app
 from sys import executable
-from datetime import datetime
-import pytz
-import time
 
 from telegram import ParseMode
 from telegram.ext import CommandHandler
-from bot import bot, dispatcher, updater, botStartTime, IMAGE_URL, IGNORE_PENDING_REQUESTS
+from bot import bot, dispatcher, updater, botStartTime, IGNORE_PENDING_REQUESTS
 from bot.helper.ext_utils import fs_utils
 from bot.helper.telegram_helper.bot_commands import BotCommands
 from bot.helper.telegram_helper.message_utils import *
 from .helper.ext_utils.bot_utils import get_readable_file_size, get_readable_time
 from .helper.telegram_helper.filters import CustomFilters
 from bot.helper.telegram_helper import button_build
-from .modules import authorize, list, cancel_mirror, mirror_status, mirror, clone, watch, shell, eval, torrent_search, delete, speedtest, usage, mediainfo, count, config, updates
-
-now=datetime.now(pytz.timezone('Asia/Jakarta'))
+from .modules import authorize, list, cancel_mirror, mirror_status, mirror, clone, watch, shell, eval, torrent_search, delete, speedtest, count, config, updates
 
 
 def stats(update, context):
     currentTime = get_readable_time(time.time() - botStartTime)
-    current = now.strftime('%Y/%m/%d %I:%M:%S %p')
     total, used, free = shutil.disk_usage('.')
     total = get_readable_file_size(total)
     used = get_readable_file_size(used)
@@ -36,7 +30,6 @@ def stats(update, context):
     memory = psutil.virtual_memory().percent
     disk = psutil.disk_usage('/').percent
     stats = f'<b>Bot Uptime:</b> {currentTime}\n' \
-            f'<b>Start Time:</b> {current}\n' \
             f'<b>Total Disk Space:</b> {total}\n' \
             f'<b>Used:</b> {used}  ' \
             f'<b>Free:</b> {free}\n\n' \
@@ -45,7 +38,7 @@ def stats(update, context):
             f'<b>CPU:</b> {cpuUsage}%\n' \
             f'<b>RAM:</b> {memory}%\n' \
             f'<b>DISK:</b> {disk}%'
-    update.effective_message.reply_photo(IMAGE_URL, stats, parse_mode=ParseMode.HTML)
+    sendMessage(stats, context.bot, update)
 
 
 def start(update, context):
@@ -54,7 +47,7 @@ This bot can mirror all your links to Google Drive!
 Type /{BotCommands.HelpCommand} to get a list of available commands
 '''
     buttons = button_build.ButtonMaker()
-    buttons.buildbutton("Repo", "https://github.com/breakdowns/slam-mirrorbot")
+    buttons.buildbutton("Repo", "https://github.com/breakdowns/slam-aria-mirror-bot")
     buttons.buildbutton("Support Group", "https://t.me/SlamMirrorSupport")
     reply_markup = InlineKeyboardMarkup(buttons.build_menu(2))
     LOGGER.info('UID: {} - UN: {} - MSG: {}'.format(update.message.chat.id, update.message.chat.username, update.message.text))
@@ -63,9 +56,9 @@ Type /{BotCommands.HelpCommand} to get a list of available commands
         if update.message.chat.type == "private" :
             sendMessage(f"Hey I'm Alive 🙂\nSince: <code>{uptime}</code>", context.bot, update)
         else :
-            update.effective_message.reply_photo(IMAGE_URL, start_string, parse_mode=ParseMode.MARKDOWN, reply_markup=reply_markup)
+            sendMarkup(start_string, context.bot, update, reply_markup)
     else :
-        sendMessage(f"Oops! not a Authorized user.", context.bot, update)
+        sendMarkup(f"Oops! not a Authorized user.\nPlease deploy your own <b>slam-aria-mirror-bot</b>.", context.bot, update, reply_markup)
 
 
 def restart(update, context):
@@ -139,15 +132,11 @@ def bot_help(update, context):
 
 /{BotCommands.UpdateCommand}: Update Bot from Upstream Repo (Owner Only)
 
-/{BotCommands.UsageCommand}: To see Heroku Dyno Stats (Owner & Sudo only)
-
 /{BotCommands.SpeedCommand}: Check Internet Speed of the Host
-
-/{BotCommands.MediaInfoCommand}: Get detailed info about replied media (Only for Telegram file)
 
 /{BotCommands.ShellCommand}: Run commands in Shell (Terminal)
 
-/{BotCommands.ExecHelpCommand}: Get help for Executor module
+/{BotCommands.ExecHelpCommand}: Get help for Executor module (Only Owner)
 
 /{BotCommands.TsHelpCommand}: Get help for Torrent search module
 '''
@@ -179,10 +168,6 @@ def bot_help(update, context):
 
 /{BotCommands.PingCommand}: Check how long it takes to Ping the Bot
 
-/{BotCommands.SpeedCommand}: Check Internet Speed of the Host
-
-/{BotCommands.MediaInfoCommand}: Get detailed info about replied media (Only for Telegram file)
-
 /{BotCommands.TsHelpCommand}: Get help for Torrent search module
 '''
 
@@ -210,7 +195,6 @@ botcmds = [
         (f'{BotCommands.PingCommand}','Ping the Bot'),
         (f'{BotCommands.RestartCommand}','Restart the bot [owner/sudo only]'),
         (f'{BotCommands.LogCommand}','Get the Bot Log [owner/sudo only]'),
-        (f'{BotCommands.MediaInfoCommand}','Get detailed info about replied media'),
         (f'{BotCommands.TsHelpCommand}','Get help for Torrent search module')
     ]
 

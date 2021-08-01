@@ -62,6 +62,7 @@ class MirrorListener(listeners.MirrorListeners):
             LOGGER.info(f"Download completed: {download_dict[self.uid].name()}")
             download = download_dict[self.uid]
             name = download.name()
+            gid = download.gid()
             size = download.size_raw()
             if name is None: # when pyrogram's media.file_name is of NoneType
                 name = os.listdir(f'{DOWNLOAD_DIR}{self.uid}')[0]
@@ -81,7 +82,7 @@ class MirrorListener(listeners.MirrorListeners):
             try:
                 path = fs_utils.get_base_name(m_path)
                 LOGGER.info(
-                    f"Extracting : {name} "
+                    f"Extracting: {name} "
                 )
                 with download_dict_lock:
                     download_dict[self.uid] = ExtractStatus(name, m_path, size)
@@ -92,12 +93,12 @@ class MirrorListener(listeners.MirrorListeners):
                     archive_result = subprocess.run(["extract", m_path])
                 if archive_result.returncode == 0:
                     threading.Thread(target=os.remove, args=(m_path,)).start()
-                    LOGGER.info(f"Deleting archive : {m_path}")
+                    LOGGER.info(f"Deleting archive: {m_path}")
                 else:
                     LOGGER.warning('Unable to extract archive! Uploading anyway')
                     path = f'{DOWNLOAD_DIR}{self.uid}/{name}'
                 LOGGER.info(
-                    f'got path : {path}'
+                    f'got path: {path}'
                 )
 
             except NotSupportedExtractionArchive:
@@ -109,10 +110,10 @@ class MirrorListener(listeners.MirrorListeners):
         up_path = f'{DOWNLOAD_DIR}{self.uid}/{up_name}'
         if up_name == "None":
             up_name = "".join(os.listdir(f'{DOWNLOAD_DIR}{self.uid}/'))
-        LOGGER.info(f"Upload Name : {up_name}")
+        LOGGER.info(f"Upload Name: {up_name}")
         drive = gdriveTools.GoogleDriveHelper(up_name, self)
         size = fs_utils.get_path_size(up_path)
-        upload_status = UploadStatus(drive, size, self)
+        upload_status = UploadStatus(drive, size, gid, self)
         with download_dict_lock:
             download_dict[self.uid] = upload_status
         update_all_messages()
@@ -218,7 +219,13 @@ class MirrorListener(listeners.MirrorListeners):
                 pass
             del download_dict[self.message.message_id]
             count = len(download_dict)
-        sendMessage(e_str, self.bot, self.update)
+        if self.message.from_user.username:
+            uname = f"@{self.message.from_user.username}"
+        else:
+            uname = f'<a href="tg://user?id={self.message.from_user.id}">{self.message.from_user.first_name}</a>'
+        if uname is not None:
+            men = f'{uname} '
+        sendMessage(men + e_str, self.bot, self.update)
         if count == 0:
             self.clean()
         else:
@@ -288,7 +295,7 @@ def _mirror(bot, update, isTar=False, extract=False):
     try:
         link = direct_link_generator(link)
     except DirectDownloadLinkException as e:
-        LOGGER.info(f'{link}: {e}')
+        LOGGER.info(e)
         if "ERROR:" in str(e):
             sendMessage(f"{e}", bot, update)
             return
@@ -302,7 +309,7 @@ def _mirror(bot, update, isTar=False, extract=False):
         if not isTar and not extract:
             sendMessage(f"Use /{BotCommands.CloneCommand} to clone Google Drive file/folder\nUse /{BotCommands.TarMirrorCommand} to make tar of Google Drive folder\nUse /{BotCommands.UnzipMirrorCommand} to extracts archive Google Drive file", bot, update)
             return
-        res, size, name = gdriveTools.GoogleDriveHelper().clonehelper(link)
+        res, size, name, files = gdriveTools.GoogleDriveHelper().clonehelper(link)
         if res != "":
             sendMessage(res, bot, update)
             return

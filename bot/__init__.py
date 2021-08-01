@@ -153,7 +153,7 @@ if DB_URI is not None:
 LOGGER.info("Generating USER_SESSION_STRING")
 app = Client(':memory:', api_id=int(TELEGRAM_API), api_hash=TELEGRAM_HASH, bot_token=BOT_TOKEN)
 
-#Generate Telegraph Token
+# Generate Telegraph Token
 sname = ''.join(random.SystemRandom().choices(string.ascii_letters, k=8))
 LOGGER.info("Generating TELEGRAPH_TOKEN using '" + sname + "' name")
 telegraph = Telegraph()
@@ -252,21 +252,13 @@ except KeyError:
     BUTTON_SIX_NAME = None
     BUTTON_SIX_URL = None
 try:
-    STOP_DUPLICATE_MIRROR = getConfig('STOP_DUPLICATE_MIRROR')
-    if STOP_DUPLICATE_MIRROR.lower() == 'true':
-        STOP_DUPLICATE_MIRROR = True
+    STOP_DUPLICATE = getConfig('STOP_DUPLICATE')
+    if STOP_DUPLICATE.lower() == 'true':
+        STOP_DUPLICATE = True
     else:
-        STOP_DUPLICATE_MIRROR = False
+        STOP_DUPLICATE = False
 except KeyError:
-    STOP_DUPLICATE_MIRROR = False
-try:
-    STOP_DUPLICATE_MEGA = getConfig('STOP_DUPLICATE_MEGA')
-    if STOP_DUPLICATE_MEGA.lower() == 'true':
-        STOP_DUPLICATE_MEGA = True
-    else:
-        STOP_DUPLICATE_MEGA = False
-except KeyError:
-    STOP_DUPLICATE_MEGA = False
+    STOP_DUPLICATE = False
 try:
     VIEW_LINK = getConfig('VIEW_LINK')
     if VIEW_LINK.lower() == 'true':
@@ -275,14 +267,6 @@ try:
         VIEW_LINK = False
 except KeyError:
     VIEW_LINK = False
-try:
-    STOP_DUPLICATE_CLONE = getConfig('STOP_DUPLICATE_CLONE')
-    if STOP_DUPLICATE_CLONE.lower() == 'true':
-        STOP_DUPLICATE_CLONE = True
-    else:
-        STOP_DUPLICATE_CLONE = False
-except KeyError:
-    STOP_DUPLICATE_CLONE = False
 try:
     IS_TEAM_DRIVE = getConfig('IS_TEAM_DRIVE')
     if IS_TEAM_DRIVE.lower() == 'true':
@@ -323,12 +307,6 @@ try:
 except KeyError:
     SHORTENER = None
     SHORTENER_API = None
-try:
-    IMAGE_URL = getConfig('IMAGE_URL')
-    if len(IMAGE_URL) == 0:
-        IMAGE_URL = 'https://telegra.ph/file/db03910496f06094f1f7a.jpg'
-except KeyError:
-    IMAGE_URL = 'https://telegra.ph/file/db03910496f06094f1f7a.jpg'
 
 IGNORE_PENDING_REQUESTS = False
 try:
@@ -336,18 +314,7 @@ try:
         IGNORE_PENDING_REQUESTS = True
 except KeyError:
     pass
-try:
-    FINISHED_PROGRESS_STR = getConfig('FINISHED_PROGRESS_STR')
-    if len(FINISHED_PROGRESS_STR) == 0:
-        FINISHED_PROGRESS_STR = '●'
-except KeyError:
-    FINISHED_PROGRESS_STR = '●'
-try:
-    UNFINISHED_PROGRESS_STR = getConfig('UNFINISHED_PROGRESS_STR')
-    if len(UNFINISHED_PROGRESS_STR) == 0:
-        UNFINISHED_PROGRESS_STR = '○'
-except KeyError:
-    UNFINISHED_PROGRESS_STR = '○'
+
 updater = tg.Updater(token=BOT_TOKEN)
 bot = updater.bot
 dispatcher = updater.dispatcher

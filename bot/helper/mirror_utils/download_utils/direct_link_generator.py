@@ -18,7 +18,7 @@ from random import choice
 from urllib.parse import urlparse
 
 import lk21
-import requests
+import requests, cfscrape
 from bs4 import BeautifulSoup
 from js2py import EvalJs
 from lk21.extractors.bypasser import Bypass
@@ -87,6 +87,12 @@ def direct_link_generator(link: str):
         return streamtape(link)
     elif 'bayfiles.com' in link:
         return anonfiles(link)
+    elif 'racaty.net' in link:
+        return racaty(link)
+    elif '1fichier.com' in link:
+        return fichier(link)
+    elif 'solidfiles.com' in link:
+        return solidfiles(link)
     else:
         raise DirectDownloadLinkException(f'No Direct link function found for {link}')
 
@@ -115,7 +121,7 @@ def zippy_share(url: str) -> str:
         js_content = getattr(evaljs, "x")
         return base_url + js_content
     except IndexError:
-        raise DirectDownloadLinkException("Can't find download button")
+        raise DirectDownloadLinkException("ERROR: Can't find download button")
 
 
 def yandex_disk(url: str) -> str:
@@ -131,26 +137,24 @@ def yandex_disk(url: str) -> str:
         dl_url = requests.get(api.format(link)).json()['href']
         return dl_url
     except KeyError:
-        raise DirectDownloadLinkException("Error: File not found/Download limit reached\n")
+        raise DirectDownloadLinkException("ERROR: File not found/Download limit reached\n")
 
 
 def cm_ru(url: str) -> str:
-    """ cloud.mail.ru direct links generator
-    Using https://github.com/JrMasterModelBuilder/cmrudl.py """
-    reply = ''
+    """cloud.mail.ru direct links generator
+    Using https://github.com/JrMasterModelBuilder/cmrudl.py"""
     try:
         link = re.findall(r'\bhttps?://.*cloud\.mail\.ru\S+', url)[0]
     except IndexError:
-        raise DirectDownloadLinkException("No cloud.mail.ru links found\n")
-    command = f'vendor/cmrudl.py/cmrudl -s {link}'
+        raise DirectDownloadLinkException('No cloud.mail.ru links found\n')
+    command = f'vendor/cmrudl/cmrudl -s {link}'
     result = popen(command).read()
     result = result.splitlines()[-1]
     try:
         data = json.loads(result)
     except json.decoder.JSONDecodeError:
         raise DirectDownloadLinkException("Error: Can't extract the link\n")
-    dl_url = data['download']
-    return dl_url
+    return data["download"]
 
 
 def uptobox(url: str) -> str:
@@ -218,12 +222,13 @@ def github(url: str) -> str:
         dl_url = download.headers["location"]
         return dl_url
     except KeyError:
-        raise DirectDownloadLinkException("Error: Can't extract the link\n")
+        raise DirectDownloadLinkException("ERROR: Can't extract the link\n")
 
 
 def hxfile(url: str) -> str:
-    """ Racaty direct link generator
-    Based on https://github.com/breakdowns/slam-mirrorbot """
+    """ Hxfile direct link generator
+    Based on https://github.com/zevtyardt/lk21
+             https://github.com/breakdowns/slam-aria-mirror-bot """
     bypasser = lk21.Bypass()
     dl_url=bypasser.bypass_filesIm(url)
     return dl_url
@@ -231,7 +236,8 @@ def hxfile(url: str) -> str:
 
 def anonfiles(url: str) -> str:
     """ Anonfiles direct link generator
-    Based on https://github.com/breakdowns/slam-mirrorbot """
+    Based on https://github.com/zevtyardt/lk21
+             https://github.com/breakdowns/slam-aria-mirror-bot """
     bypasser = lk21.Bypass()
     dl_url=bypasser.bypass_anonfiles(url)
     return dl_url
@@ -239,7 +245,8 @@ def anonfiles(url: str) -> str:
 
 def letsupload(url: str) -> str:
     """ Letsupload direct link generator
-    Based on https://github.com/breakdowns/slam-mirrorbot """
+    Based on https://github.com/zevtyardt/lk21
+             https://github.com/breakdowns/slam-aria-mirror-bot """
     dl_url = ''
     try:
         link = re.findall(r'\bhttps?://.*letsupload\.io\S+', url)[0]
@@ -252,7 +259,8 @@ def letsupload(url: str) -> str:
 
 def fembed(link: str) -> str:
     """ Fembed direct link generator
-    Based on https://github.com/breakdowns/slam-mirrorbot """
+    Based on https://github.com/zevtyardt/lk21
+             https://github.com/breakdowns/slam-aria-mirror-bot """
     bypasser = lk21.Bypass()
     dl_url=bypasser.bypass_fembed(link)
     lst_link = []
@@ -264,7 +272,8 @@ def fembed(link: str) -> str:
 
 def sbembed(link: str) -> str:
     """ Sbembed direct link generator
-    Based on https://github.com/breakdowns/slam-mirrorbot """
+    Based on https://github.com/zevtyardt/lk21
+             https://github.com/breakdowns/slam-aria-mirror-bot """
     bypasser = lk21.Bypass()
     dl_url=bypasser.bypass_sbembed(link)
     lst_link = []
@@ -282,7 +291,7 @@ def onedrive(link: str) -> str:
     direct_link1 = f"https://api.onedrive.com/v1.0/shares/u!{direct_link_encoded}/root/content"
     resp = requests.head(direct_link1)
     if resp.status_code != 302:
-        return "Error: Unauthorized link, the link may be private"
+        return "ERROR: Unauthorized link, the link may be private"
     dl_link = resp.next.url
     file_name = dl_link.rsplit("/", 1)[1]
     resp2 = requests.head(dl_link)
@@ -304,7 +313,8 @@ def pixeldrain(url: str) -> str:
 
 def antfiles(url: str) -> str:
     """ Antfiles direct link generator
-    Based on https://github.com/breakdowns/slam-mirrorbot """
+    Based on https://github.com/zevtyardt/lk21
+             https://github.com/breakdowns/slam-aria-mirror-bot """
     bypasser = lk21.Bypass()
     dl_url=bypasser.bypass_antfiles(url)
     return dl_url
@@ -312,9 +322,103 @@ def antfiles(url: str) -> str:
 
 def streamtape(url: str) -> str:
     """ Streamtape direct link generator
-    Based on https://github.com/breakdowns/slam-mirrorbot """
+    Based on https://github.com/zevtyardt/lk21
+             https://github.com/breakdowns/slam-aria-mirror-bot """
     bypasser = lk21.Bypass()
     dl_url=bypasser.bypass_streamtape(url)
+    return dl_url
+
+
+def racaty(url: str) -> str:
+    """ Racaty direct links generator
+    based on https://github.com/breakdowns/slam-aria-mirror-bot """
+    dl_url = ''
+    try:
+        link = re.findall(r'\bhttps?://.*racaty\.net\S+', url)[0]
+    except IndexError:
+        raise DirectDownloadLinkException("No Racaty links found\n")
+    scraper = cfscrape.create_scraper()
+    r = scraper.get(url)
+    soup = BeautifulSoup(r.text, "lxml")
+    op = soup.find("input", {"name": "op"})["value"]
+    ids = soup.find("input", {"name": "id"})["value"]
+    rpost = scraper.post(url, data = {"op": op, "id": ids})
+    rsoup = BeautifulSoup(rpost.text, "lxml")
+    dl_url = rsoup.find("a", {"id": "uniqueExpirylink"})["href"].replace(" ", "%20")
+    return dl_url
+
+
+def fichier(link: str) -> str:
+    """ 1Fichier direct links generator
+    Based on https://github.com/Maujar
+             https://github.com/breakdowns/slam-aria-mirror-bot """
+    regex = r"^([http:\/\/|https:\/\/]+)?.*1fichier\.com\/\?.+"
+    gan = re.match(regex, link)
+    if not gan:
+      raise DirectDownloadLinkException("ERROR: The link you entered is wrong!")
+    if "::" in link:
+      pswd = link.split("::")[-1]
+      url = link.split("::")[-2]
+    else:
+      pswd = None
+      url = link
+    try:
+      if pswd is None:
+        req = requests.post(url)
+      else:
+        pw = {"pass": pswd}
+        req = requests.post(url, data=pe)
+    except:
+      raise DirectDownloadLinkException("ERROR: Unable to reach 1fichier server!")
+    if req.status_code == 404:
+      raise DirectDownloadLinkException("ERROR: File not found/The link you entered is wrong!")
+    soup = BeautifulSoup(req.content, 'lxml')
+    if soup.find("a", {"class": "ok btn-general btn-orange"}) is not None:
+      dl_url = soup.find("a", {"class": "ok btn-general btn-orange"})["href"]
+      if dl_url is None:
+        raise DirectDownloadLinkException("ERROR: Unable to generate Direct Link 1fichier!")
+      else:
+        return dl_url
+    else:
+      if len(soup.find_all("div", {"class": "ct_warn"})) == 2:
+        str_2 = soup.find_all("div", {"class": "ct_warn"})[-1]
+        if "you must wait" in str(str_2).lower():
+          numbers = [int(word) for word in str(str_2).split() if word.isdigit()]
+          if len(numbers) == 0:
+            raise DirectDownloadLinkException("ERROR: 1fichier is on a limit. Please wait a few minutes/hour.")
+          else:
+            raise DirectDownloadLinkException(f"ERROR: 1fichier is on a limit. Please wait {numbers[0]} minute.")
+        elif "protect access" in str(str_2).lower():
+          raise DirectDownloadLinkException("ERROR: This link requires a password!\n\n<b>This link requires a password!</b>\n- Insert sign <b>::</b> after the link and write the password after the sign.\n\n<b>Example:</b>\n<code>/mirror https://1fichier.com/?smmtd8twfpm66awbqz04::love you</code>\n\n* No spaces between the signs <b>::</b>\n* For the password, you can use a space!")
+        else:
+          raise DirectDownloadLinkException("ERROR: Error trying to generate Direct Link from 1fichier!")
+      elif len(soup.find_all("div", {"class": "ct_warn"})) == 3:
+        str_1 = soup.find_all("div", {"class": "ct_warn"})[-2]
+        str_3 = soup.find_all("div", {"class": "ct_warn"})[-1]
+        if "you must wait" in str(str_1).lower():
+          numbers = [int(word) for word in str(str_1).split() if word.isdigit()]
+          if len(numbers) == 0:
+            raise DirectDownloadLinkException("ERROR: 1fichier is on a limit. Please wait a few minutes/hour.")
+          else:
+            raise DirectDownloadLinkException(f"ERROR: 1fichier is on a limit. Please wait {numbers[0]} minute.")
+        elif "bad password" in str(str_3).lower():
+          raise DirectDownloadLinkException("ERROR: The password you entered is wrong!")
+        else:
+          raise DirectDownloadLinkException("ERROR: Error trying to generate Direct Link from 1fichier!")
+      else:
+        raise DirectDownloadLinkException("ERROR: Error trying to generate Direct Link from 1fichier!")
+
+
+def solidfiles(url: str) -> str:
+    """ Solidfiles direct links generator
+    Based on https://github.com/Xonshiz/SolidFiles-Downloader
+    By https://github.com/Jusidama18 """
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36'
+    }
+    pageSource = requests.get(url, headers = headers).text
+    mainOptions = str(re.search(r'viewerOptions\'\,\ (.*?)\)\;', pageSource).group(1))
+    dl_url = json.loads(mainOptions)["downloadUrl"]
     return dl_url
 
 
