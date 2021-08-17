@@ -374,7 +374,7 @@ try:
         if out.returncode != 0:
             logging.error(out)
             raise KeyError
-        subprocess.run(["unzip", "-q", "-o", "accounts.zip"])
+        subprocess.run(["unzip", "-q", "-o", "accounts.zip", "&&", "python3", "sarename.py"])
         os.remove("accounts.zip")
 except KeyError:
     ACCOUNTS_ZIP_URL = None
