@@ -128,12 +128,10 @@ def yandex_disk(url: str) -> str:
     try:
         link = re.findall(r'\bhttps?://.*yadi\.sk\S+', url)[0]
     except IndexError:
-        reply = "No Yandex.Disk links found\n"
-        return reply
+        return "No Yandex.Disk links found\n"
     api = 'https://cloud-api.yandex.net/v1/disk/public/resources/download?public_key={}'
     try:
-        dl_url = requests.get(api.format(link)).json()['href']
-        return dl_url
+        return requests.get(api.format(link)).json()['href']
     except KeyError:
         raise DirectDownloadLinkException("ERROR: File not found/Download limit reached\n")
 
@@ -169,8 +167,7 @@ def mediafire(url: str) -> str:
         raise DirectDownloadLinkException("No MediaFire links found\n")
     page = BeautifulSoup(requests.get(link).content, 'lxml')
     info = page.find('a', {'aria-label': 'Download file'})
-    dl_url = info.get('href')
-    return dl_url
+    return info.get('href')
 
 
 def osdn(url: str) -> str:
@@ -200,8 +197,7 @@ def github(url: str) -> str:
         raise DirectDownloadLinkException("No GitHub Releases links found\n")
     download = requests.get(url, stream=True, allow_redirects=False)
     try:
-        dl_url = download.headers["location"]
-        return dl_url
+        return download.headers["location"]
     except KeyError:
         raise DirectDownloadLinkException("ERROR: Can't extract the link\n")
 
@@ -209,25 +205,23 @@ def github(url: str) -> str:
 def hxfile(url: str) -> str:
     """ Hxfile direct link generator
     Based on https://github.com/zevtyardt/lk21
-             https://github.com/breakdowns/slam-mirrorbot """
+             https://github.com/SlamDevs/slam-mirrorbot """
     bypasser = lk21.Bypass()
-    dl_url=bypasser.bypass_filesIm(url)
-    return dl_url
+    return bypasser.bypass_filesIm(url)
 
 
 def anonfiles(url: str) -> str:
     """ Anonfiles direct link generator
     Based on https://github.com/zevtyardt/lk21
-             https://github.com/breakdowns/slam-mirrorbot """
+             https://github.com/SlamDevs/slam-mirrorbot """
     bypasser = lk21.Bypass()
-    dl_url=bypasser.bypass_anonfiles(url)
-    return dl_url
+    return bypasser.bypass_anonfiles(url)
 
 
 def letsupload(url: str) -> str:
     """ Letsupload direct link generator
     Based on https://github.com/zevtyardt/lk21
-             https://github.com/breakdowns/slam-mirrorbot """
+             https://github.com/SlamDevs/slam-mirrorbot """
     dl_url = ''
     try:
         link = re.findall(r'\bhttps?://.*letsupload\.io\S+', url)[0]
@@ -241,26 +235,22 @@ def letsupload(url: str) -> str:
 def fembed(link: str) -> str:
     """ Fembed direct link generator
     Based on https://github.com/zevtyardt/lk21
-             https://github.com/breakdowns/slam-mirrorbot """
+             https://github.com/SlamDevs/slam-mirrorbot """
     bypasser = lk21.Bypass()
     dl_url=bypasser.bypass_fembed(link)
-    lst_link = []
     count = len(dl_url)
-    for i in dl_url:
-        lst_link.append(dl_url[i])
+    lst_link = [dl_url[i] for i in dl_url]
     return lst_link[count-1]
 
 
 def sbembed(link: str) -> str:
     """ Sbembed direct link generator
     Based on https://github.com/zevtyardt/lk21
-             https://github.com/breakdowns/slam-mirrorbot """
+             https://github.com/SlamDevs/slam-mirrorbot """
     bypasser = lk21.Bypass()
     dl_url=bypasser.bypass_sbembed(link)
-    lst_link = []
     count = len(dl_url)
-    for i in dl_url:
-        lst_link.append(dl_url[i])
+    lst_link = [dl_url[i] for i in dl_url]
     return lst_link[count-1]
 
 
@@ -295,24 +285,22 @@ def pixeldrain(url: str) -> str:
 def antfiles(url: str) -> str:
     """ Antfiles direct link generator
     Based on https://github.com/zevtyardt/lk21
-             https://github.com/breakdowns/slam-mirrorbot """
+             https://github.com/SlamDevs/slam-mirrorbot """
     bypasser = lk21.Bypass()
-    dl_url=bypasser.bypass_antfiles(url)
-    return dl_url
+    return bypasser.bypass_antfiles(url)
 
 
 def streamtape(url: str) -> str:
     """ Streamtape direct link generator
     Based on https://github.com/zevtyardt/lk21
-             https://github.com/breakdowns/slam-mirrorbot """
+             https://github.com/SlamDevs/slam-mirrorbot """
     bypasser = lk21.Bypass()
-    dl_url=bypasser.bypass_streamtape(url)
-    return dl_url
+    return bypasser.bypass_streamtape(url)
 
 
 def racaty(url: str) -> str:
     """ Racaty direct links generator
-    based on https://github.com/breakdowns/slam-mirrorbot """
+    based on https://github.com/SlamDevs/slam-mirrorbot """
     dl_url = ''
     try:
         link = re.findall(r'\bhttps?://.*racaty\.net\S+', url)[0]
@@ -332,7 +320,7 @@ def racaty(url: str) -> str:
 def fichier(link: str) -> str:
     """ 1Fichier direct links generator
     Based on https://github.com/Maujar
-             https://github.com/breakdowns/slam-mirrorbot """
+             https://github.com/SlamDevs/slam-mirrorbot """
     regex = r"^([http:\/\/|https:\/\/]+)?.*1fichier\.com\/\?.+"
     gan = re.match(regex, link)
     if not gan:
@@ -348,45 +336,44 @@ def fichier(link: str) -> str:
         req = requests.post(url)
       else:
         pw = {"pass": pswd}
-        req = requests.post(url, data=pe)
+        req = requests.post(url, data=pw)
     except:
       raise DirectDownloadLinkException("ERROR: Unable to reach 1fichier server!")
     if req.status_code == 404:
       raise DirectDownloadLinkException("ERROR: File not found/The link you entered is wrong!")
     soup = BeautifulSoup(req.content, 'lxml')
     if soup.find("a", {"class": "ok btn-general btn-orange"}) is not None:
-      dl_url = soup.find("a", {"class": "ok btn-general btn-orange"})["href"]
-      if dl_url is None:
-        raise DirectDownloadLinkException("ERROR: Unable to generate Direct Link 1fichier!")
-      else:
-        return dl_url
-    else:
-      if len(soup.find_all("div", {"class": "ct_warn"})) == 2:
+        dl_url = soup.find("a", {"class": "ok btn-general btn-orange"})["href"]
+        if dl_url is None:
+          raise DirectDownloadLinkException("ERROR: Unable to generate Direct Link 1fichier!")
+        else:
+          return dl_url
+    elif len(soup.find_all("div", {"class": "ct_warn"})) == 2:
         str_2 = soup.find_all("div", {"class": "ct_warn"})[-1]
         if "you must wait" in str(str_2).lower():
-          numbers = [int(word) for word in str(str_2).split() if word.isdigit()]
-          if len(numbers) == 0:
-            raise DirectDownloadLinkException("ERROR: 1fichier is on a limit. Please wait a few minutes/hour.")
-          else:
-            raise DirectDownloadLinkException(f"ERROR: 1fichier is on a limit. Please wait {numbers[0]} minute.")
+            numbers = [int(word) for word in str(str_2).split() if word.isdigit()]
+            if not numbers:
+                raise DirectDownloadLinkException("ERROR: 1fichier is on a limit. Please wait a few minutes/hour.")
+            else:
+                raise DirectDownloadLinkException(f"ERROR: 1fichier is on a limit. Please wait {numbers[0]} minute.")
         elif "protect access" in str(str_2).lower():
           raise DirectDownloadLinkException("ERROR: This link requires a password!\n\n<b>This link requires a password!</b>\n- Insert sign <b>::</b> after the link and write the password after the sign.\n\n<b>Example:</b>\n<code>/mirror https://1fichier.com/?smmtd8twfpm66awbqz04::love you</code>\n\n* No spaces between the signs <b>::</b>\n* For the password, you can use a space!")
         else:
-          raise DirectDownloadLinkException("ERROR: Error trying to generate Direct Link from 1fichier!")
-      elif len(soup.find_all("div", {"class": "ct_warn"})) == 3:
+            raise DirectDownloadLinkException("ERROR: Error trying to generate Direct Link from 1fichier!")
+    elif len(soup.find_all("div", {"class": "ct_warn"})) == 3:
         str_1 = soup.find_all("div", {"class": "ct_warn"})[-2]
         str_3 = soup.find_all("div", {"class": "ct_warn"})[-1]
         if "you must wait" in str(str_1).lower():
-          numbers = [int(word) for word in str(str_1).split() if word.isdigit()]
-          if len(numbers) == 0:
-            raise DirectDownloadLinkException("ERROR: 1fichier is on a limit. Please wait a few minutes/hour.")
-          else:
-            raise DirectDownloadLinkException(f"ERROR: 1fichier is on a limit. Please wait {numbers[0]} minute.")
+            numbers = [int(word) for word in str(str_1).split() if word.isdigit()]
+            if not numbers:
+                raise DirectDownloadLinkException("ERROR: 1fichier is on a limit. Please wait a few minutes/hour.")
+            else:
+                raise DirectDownloadLinkException(f"ERROR: 1fichier is on a limit. Please wait {numbers[0]} minute.")
         elif "bad password" in str(str_3).lower():
           raise DirectDownloadLinkException("ERROR: The password you entered is wrong!")
         else:
-          raise DirectDownloadLinkException("ERROR: Error trying to generate Direct Link from 1fichier!")
-      else:
+            raise DirectDownloadLinkException("ERROR: Error trying to generate Direct Link from 1fichier!")
+    else:
         raise DirectDownloadLinkException("ERROR: Error trying to generate Direct Link from 1fichier!")
 
 
@@ -399,8 +386,7 @@ def solidfiles(url: str) -> str:
     }
     pageSource = requests.get(url, headers = headers).text
     mainOptions = str(re.search(r'viewerOptions\'\,\ (.*?)\)\;', pageSource).group(1))
-    dl_url = json.loads(mainOptions)["downloadUrl"]
-    return dl_url
+    return json.loads(mainOptions)["downloadUrl"]
 
 
 def useragent():
