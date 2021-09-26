@@ -182,7 +182,7 @@ shorte.st, linkvertise.com , ouo.io
 
 Above are the supported URL Shorteners. Except these only some URL Shorteners are supported.
 ### Add more buttons (Optional Field)
-Three buttons are already added including Drive Link, Index Link, and View Link, you can add extra buttons, if you don't know what are the below entries, simply leave them, don't fill anything in them.
+Three buttons are already added including Drive Link, Index Link, and View Link, you can add extra buttons, if you don't know what are the below entries, simply leave them empty.
 - `BUTTON_FOUR_NAME`:
 - `BUTTON_FOUR_URL`:
 - `BUTTON_FIVE_NAME`:
@@ -357,7 +357,6 @@ Thanks to:
 - [`Dank-del`](https://github.com/Dank-del) for base repo
 - [`magneto261290`](https://github.com/magneto261290) for some features
 - [`SVR666`](https://github.com/SVR666) for some features & fixes
-- [`anasty17`](https://github.com/anasty17) for some features & help
 - [`breakdowns`](https://github.com/breakdowns) for slam-mirrorbot
 - [`zevtyardt`](https://github.com/zevtyardt) for some direct links
 - [`yash-dk`](https://github.com/yash-dk) for implementation of qBittorrent on Python
